@@ -1,0 +1,26 @@
+# ---- Build stage: install everything and compile TypeScript ----
+FROM node:26.10.0-alpine AS build
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# ---- Runtime stage: only what's needed to run ----
+FROM node:26.10.0-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=build /app/dist ./dist
+
+# The migration SQL files.
+COPY --from=build /app/drizzle ./drizzle
+
+USER node
+EXPOSE 3000
+CMD ["node", "dist/main.js"]

@@ -1,0 +1,38 @@
+@base = http://localhost:3000
+
+### Create a top-level article
+POST {{base}}/articles
+Content-Type: application/json
+
+{ "code": "20.", "title": "Masonry" }
+
+### Create a child (paste the id from the response above)
+POST {{base}}/articles
+Content-Type: application/json
+
+{ "code": "20.11.", "title": "Masonry - materials", "parentId": "761a50cb-b455-4c4d-9faf-c0a42ac1eba7" }
+
+### Get the tree
+GET {{base}}/articles
+
+### Should fail: code doesn't extend the parent
+POST {{base}}/articles
+Content-Type: application/json
+
+{ "code": "30.11.", "title": "Wrong", "parentId": "PASTE-ID-HERE" }
+
+### Should fail: unknown property
+POST {{base}}/articles
+Content-Type: application/json
+
+{ "code": "40.", "title": "Roofing", "isAdmin": true }
+
+### Should fail: duplicate code
+POST {{base}}/articles
+Content-Type: application/json
+
+{ "code": "20.", "title": "Duplicate" }
+
+### Delete article tree
+DELETE {{base}}/articles/PASTE_ID_HERE
+Content-Type: application/json

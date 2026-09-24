@@ -1,39 +1,41 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Inject, Module, OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
-
-// Using ESM so explicilty importing pg.
 import pg from 'pg';
-
-// Every table definition.
 import * as schema from './schema.js';
 
-// The injection token.
+// Two tokens now: the raw connection pool, and the Drizzle instance built on it.
+// Splitting them lets tests replace just the pool with one pointing at the
+// test database, and lets the module close the pool on shutdown.
+export const PG_POOL = Symbol('PG_POOL');
 export const DB = Symbol('DB');
 
-// Type alias so services get autocompletion on your tables.
 export type Database = NodePgDatabase<typeof schema>;
 
-// Global: available in every module without importing DatabaseModule each time...
 @Global()
 @Module({
   providers: [
     {
-      provide: DB,
+      provide: PG_POOL,
       inject: [ConfigService],
-
-      useFactory: (config: ConfigService): Database => {
-        // Pool keeps several connections open, reuses them, instead of opening a connection per query.
-        const pool = new pg.Pool({
-          connectionString: config.getOrThrow<string>('DATABASE_URL'),
-        });
-
-        return drizzle(pool, { schema });
-      },
+      useFactory: (config: ConfigService) =>
+        new pg.Pool({ connectionString: config.getOrThrow<string>('DATABASE_URL') }),
+    },
+    {
+      // Nest resolves PG_POOL first, then passes it into this factory.
+      provide: DB,
+      inject: [PG_POOL],
+      useFactory: (pool: pg.Pool): Database => drizzle(pool, { schema }),
     },
   ],
-
-  // Make the DB token available to other modules.
   exports: [DB],
 })
-export class DatabaseModule {}
+export class DatabaseModule implements OnApplicationShutdown {
+  constructor(@Inject(PG_POOL) private readonly pool: pg.Pool) {}
+
+  // Nest calls this when the app closes (app.close() in tests, or a Docker
+  // stop signal in production). Ending the pool closes every open connection.
+  async onApplicationShutdown(): Promise<void> {
+    await this.pool.end();
+  }
+}

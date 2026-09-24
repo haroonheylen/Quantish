@@ -73,10 +73,10 @@ Content-Type: application/json
 POST {{base}}/objects/assign
 Content-Type: application/json
 
-{ "articleId": "b785e36d-44af-40ff-9f67-37a1e01a89b2", "type": "wall", "properties": { "thickness": 0.14 } }
+{ "articleId": "722becd5-28ce-429c-b8ba-5f36e4f4b1a8", "type": "wall", "properties": { "thickness": 0.14 } }
 
 ### List objects in the article
-GET {{base}}/objects?articleId=b785e36d-44af-40ff-9f67-37a1e01a89b2
+GET {{base}}/objects?articleId=722becd5-28ce-429c-b8ba-5f36e4f4b1a8
 
 ### List unassigned objects
 GET {{base}}/objects?unassigned=true
@@ -104,3 +104,9 @@ DELETE {{base}}/articles/b785e36d-44af-40ff-9f67-37a1e01a89b2
 
 ### Both walls should appear here again
 GET {{base}}/objects?unassigned=true
+
+### Summary
+GET {{base}}/summary
+
+### Tree with totals
+GET {{base}}/articles

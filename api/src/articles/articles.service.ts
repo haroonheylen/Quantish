@@ -14,28 +14,36 @@ import { articles, objects } from '../db/schema.js';
 import { assertCodeFitsParent, compareCodes } from './article-code.js';
 import { CreateArticleDto } from './dto/create-article.dto.js';
 import { UpdateArticleDto } from './dto/update-article.dto.js';
+import { formatTotal } from '../summary/rollup.js';
+import { SummaryService } from '../summary/summary.service.js';
 
 // Types inferred from the schema, so they can never drift from the table.
 type ArticleRow = typeof articles.$inferSelect;
-export type ArticleNode = ArticleRow & { children: ArticleNode[] };
-
+export type ArticleNode = ArticleRow & { total: string; children: ArticleNode[] };
 @Injectable()
 export class ArticlesService {
   // @Inject(DB) asks Nest for the provider registered under the DB token.
-  constructor(@Inject(DB) private readonly db: Database) {}
+    constructor(
+    @Inject(DB) private readonly db: Database,
+    private readonly summary: SummaryService,
+  ) {}
 
   // The whole bill as a nested tree.
   // One flat query, then assembled in memory. A bill has hundreds of
   // articles, not millions, so this is simpler than a recursive SQL query
   // and just as fast.
   async findTree(): Promise<ArticleNode[]> {
-    const rows = await this.db.select().from(articles);
+    const [rows, totals] = await Promise.all([
+      this.db.select().from(articles),
+      this.summary.getArticleTotals(),
+    ]);
     rows.sort((a, b) => compareCodes(a.code, b.code));
 
-    // Map preserves insertion order, and rows are sorted,
-    // so every children array ends up sorted too.
     const byId = new Map<string, ArticleNode>();
-    for (const row of rows) byId.set(row.id, { ...row, children: [] });
+    for (const row of rows) {
+      // Each node carries its rolled-up total, including all sub-articles.
+      byId.set(row.id, { ...row, total: formatTotal(totals, row.id), children: [] });
+    }
 
     const roots: ArticleNode[] = [];
     for (const node of byId.values()) {
@@ -45,20 +53,25 @@ export class ArticlesService {
     return roots;
   }
 
-  // One article with its direct children and its own objects.
   async findOne(id: string) {
     const article = await this.findRowOrThrow(id);
 
-    // Two independent queries, run in parallel.
-    const [children, articleObjects] = await Promise.all([
+    const [children, articleObjects, totals] = await Promise.all([
       this.db.select().from(articles).where(eq(articles.parentId, id)),
       this.db.select().from(objects).where(eq(objects.articleId, id)),
+      this.summary.getArticleTotals(),
     ]);
 
     children.sort((a, b) => compareCodes(a.code, b.code));
-    return { ...article, children, objects: articleObjects };
-  }
 
+    return {
+      ...article,
+      // Includes sub-articles. `objects` below lists only this article's own.
+      total: formatTotal(totals, id),
+      children: children.map((child) => ({ ...child, total: formatTotal(totals, child.id) })),
+      objects: articleObjects,
+    };
+  }
   async create(dto: CreateArticleDto): Promise<ArticleRow> {
     const parent = dto.parentId ? await this.findParentOrThrow(dto.parentId) : null;
     assertCodeFitsParent(dto.code, parent?.code ?? null);

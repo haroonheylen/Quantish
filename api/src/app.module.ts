@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module.js';
 import { validateEnv } from './config/env.validation.js';
 import { ArticlesModule } from './articles/articles.module.js';
 import { ObjectsModule } from './objects/objects.module.js';
+import { SummaryModule } from './summary/summary.module.js';
 
 
 @Module({
@@ -20,6 +21,7 @@ import { ObjectsModule } from './objects/objects.module.js';
   HealthModule,
   ArticlesModule,
   ObjectsModule,
+  SummaryModule,
 ],
   controllers: [AppController],
   providers: [AppService],

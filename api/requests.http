@@ -110,3 +110,17 @@ GET {{base}}/summary
 
 ### Tree with totals
 GET {{base}}/articles
+
+### Summary of the seeded bill
+GET {{base}}/summary
+
+### Tree with rolled-up totals
+GET {{base}}/articles
+
+### The objects waiting to be assigned
+GET {{base}}/objects?unassigned=true
+### Bulk Assign
+POST {{base}}/objects/assign
+Content-Type: application/json
+
+{ "articleId": "1b573e05-92cd-4823-90a7-802262d4df55", "type": "wall", "properties": { "thickness": 0.14 } }

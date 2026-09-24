@@ -2,7 +2,9 @@ import type {
   Article,
   ArticleDetail,
   ArticleNode,
+  BillObject,
   CreateArticleInput,
+  ObjectType,
   Summary,
 } from './types';
 
@@ -55,6 +57,15 @@ export const api = {
     request<Article>('/articles', { method: 'POST', body: JSON.stringify(input) }),
 
   deleteArticle: (id: string) => request<void>(`/articles/${id}`, { method: 'DELETE' }),
+  listObjects: (filters: { articleId?: string; type?: ObjectType; unassigned?: boolean } = {}) => {
+    // URLSearchParams builds a correctly encoded query string.
+    const params = new URLSearchParams();
+    if (filters.articleId) params.set('articleId', filters.articleId);
+    if (filters.type) params.set('type', filters.type);
+    if (filters.unassigned) params.set('unassigned', 'true');
+    const query = params.toString();
+    return request<BillObject[]>(`/objects${query ? `?${query}` : ''}`);
+  },
 
   getSummary: () => request<Summary>('/summary'),
 };

@@ -128,3 +128,129 @@ a:hover {
 .btn-danger:hover {
   background: var(--danger-soft);
 }
+/* ------------------------------------------------------------------
+   Page layout
+   ------------------------------------------------------------------ */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.page-header h1 {
+  font-size: var(--text-xl);
+  letter-spacing: -0.01em;
+}
+.page-header p {
+  margin: var(--space-1) 0 0;
+}
+
+.section {
+  margin-top: var(--space-6);
+}
+.section h2 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+}
+
+/* ------------------------------------------------------------------
+   The ledger: the one table style used on every screen.
+   A bill of quantities should read like a document, so rows are
+   separated by hairlines, not boxed, and amounts are right-aligned.
+   ------------------------------------------------------------------ */
+.table-wrap {
+  /* Wide tables scroll inside their own box on small screens,
+     so the page itself never scrolls sideways. */
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ledger th {
+  text-align: left;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-muted);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule-strong);
+  white-space: nowrap;
+}
+.ledger td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.ledger tbody tr:last-child td {
+  border-bottom: none;
+}
+.ledger tfoot td {
+  border-top: 2px solid var(--rule-strong);
+  font-weight: 600;
+}
+.ledger th.amount,
+.ledger td.amount {
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------
+   Messages
+   ------------------------------------------------------------------ */
+.notice {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+
+.form-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+.form-error p {
+  margin: 0;
+}
+
+.empty {
+  background: var(--surface);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+}
+.empty h2 {
+  font-size: var(--text-lg);
+}
+.empty p {
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+/* ------------------------------------------------------------------
+   Print: a bill of quantities gets printed and sent around,
+   so the navigation and buttons disappear on paper.
+   ------------------------------------------------------------------ */
+@media print {
+  .topbar,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .page {
+    padding: 0;
+  }
+  .table-wrap {
+    border: none;
+    overflow: visible;
+  }
+}

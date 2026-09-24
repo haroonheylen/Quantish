@@ -6,6 +6,7 @@ import { DatabaseModule } from './db/database.module.js';
 import { HealthModule } from './health/health.module.js';
 import { validateEnv } from './config/env.validation.js';
 import { ArticlesModule } from './articles/articles.module.js';
+import { ObjectsModule } from './objects/objects.module.js';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { ArticlesModule } from './articles/articles.module.js';
   DatabaseModule,
   HealthModule,
   ArticlesModule,
+  ObjectsModule,
 ],
   controllers: [AppController],
   providers: [AppService],

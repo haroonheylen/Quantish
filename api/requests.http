@@ -36,3 +36,71 @@ Content-Type: application/json
 ### Delete article tree
 DELETE {{base}}/articles/PASTE_ID_HERE
 Content-Type: application/json
+### Create an article to assign objects to
+POST {{base}}/articles
+Content-Type: application/json
+
+{ "code": "20.", "title": "Masonry" }
+
+### Create a wall with a client-supplied UUID (as from the drawing)
+POST {{base}}/objects
+Content-Type: application/json
+
+{
+  "id": "3f1c2b8e-1111-4a5b-9c3d-000000000001",
+  "name": "Interior wall A",
+  "type": "wall",
+  "unit": "m2",
+  "quantity": 12.5,
+  "unitPrice": 92.5,
+  "properties": { "thickness": 0.14, "height": 2.7 }
+}
+
+### Create a second, unassigned 14cm wall
+POST {{base}}/objects
+Content-Type: application/json
+
+{
+  "name": "Interior wall B",
+  "type": "wall",
+  "unit": "m2",
+  "quantity": 8.2,
+  "unitPrice": 92.5,
+  "properties": { "thickness": 0.14 }
+}
+
+### Bulk assign all unassigned 14cm walls
+POST {{base}}/objects/assign
+Content-Type: application/json
+
+{ "articleId": "b785e36d-44af-40ff-9f67-37a1e01a89b2", "type": "wall", "properties": { "thickness": 0.14 } }
+
+### List objects in the article
+GET {{base}}/objects?articleId=b785e36d-44af-40ff-9f67-37a1e01a89b2
+
+### List unassigned objects
+GET {{base}}/objects?unassigned=true
+
+### Should fail: property not valid for a door
+POST {{base}}/objects
+Content-Type: application/json
+
+{ "name": "Front door", "type": "door", "unit": "piece", "quantity": 1, "unitPrice": 850, "properties": { "thickness": 0.05 } }
+
+### Should fail: piece with quantity 2
+POST {{base}}/objects
+Content-Type: application/json
+
+{ "name": "Window", "type": "window", "unit": "piece", "quantity": 2, "unitPrice": 400 }
+
+### Should fail: duplicate client UUID
+POST {{base}}/objects
+Content-Type: application/json
+
+{ "id": "3f1c2b8e-1111-4a5b-9c3d-000000000001", "name": "Dup", "type": "wall", "unit": "m2", "quantity": 1, "unitPrice": 1 }
+
+### Delete the article: objects should become unassigned, not deleted
+DELETE {{base}}/articles/b785e36d-44af-40ff-9f67-37a1e01a89b2
+
+### Both walls should appear here again
+GET {{base}}/objects?unassigned=true

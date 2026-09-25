@@ -88,7 +88,7 @@ The seed script **resets** the database to the demo data every time it runs. To 
 | Money     | Postgres `numeric` and `decimal.js`           |
 | Frontend  | Vue 3 (Composition API), TypeScript, Vite     |
 | Serving   | nginx for the built frontend                  |
-| Tests     | Jest and Supertest                            |
+| Tests     | Vitest and Supertest                            |
 | Runtime   | Node.js 26.10 (pinned in `.nvmrc`)            |
 
 ---
